@@ -40,24 +40,19 @@ class MotorAxioma:
                 self.busqueda_rango(nodo_actual.rightChild, min, max, resultados)
         return resultados
 
-    def obtener_ejercicios(self, id_concepto, bloom=None, dificultad=None):
-        
-        # CASO 1: El usuario solo pasó el concepto (Ej: "Dame todo el Tema 15")
-        if bloom is None:
-            min_score = self.rango_min(id_concepto)
-            max_score = self.rango_max(id_concepto)
-            
-        # CASO 2: El usuario pasó concepto y Bloom (Ej: "Dame el Tema 15, nivel Bloom 3")
-        elif dificultad is None:
-            min_score = self.rango_min(id_concepto, bloom=bloom)
-            max_score = self.rango_max(id_concepto, bloom=bloom)
-            
-        # CASO 3: El usuario pasó todo (Ej: "Dame ejercicios súper específicos")
-        else:
-            min_score = self.rango_min(id_concepto, bloom, dificultad)
-            max_score = self.rango_max(id_concepto, bloom, dificultad)
-
-        ejercicios = self.busqueda_rango(self.arbol.root, min_score, max_score)
-        return ejercicios
+    def obtener_ejercicios(self, id_concepto, bloom_min=1, bloom_max=6, dif_min=1, dif_max=99):
+        """
+        Busca ejercicios filtrando por rangos de Bloom y Dificultad.
+        Como el score codifica bloom antes que dificultad, iteramos por cada
+        nivel de Bloom dentro del rango y acumulamos los resultados.
+        """
+        resultados = []
+        for b in range(bloom_min, bloom_max + 1):
+            min_score = self.rango_min(id_concepto, bloom=b, dificultad=dif_min)
+            max_score = self.rango_max(id_concepto, bloom=b, dificultad=dif_max)
+            parcial = self.busqueda_rango(self.arbol.root, min_score, max_score)
+            if parcial:
+                resultados.extend(parcial)
+        return resultados
 
   

@@ -12,6 +12,9 @@ if 'motor' not in st.session_state:
 
 if 'filtros' not in st.session_state:
     st.session_state.filtros = None
+# Limpiar filtros con formato viejo (bloom/dificultad únicos)
+elif st.session_state.filtros and 'bloom_min' not in st.session_state.filtros:
+    st.session_state.filtros = None
 
 if 'resultados' not in st.session_state:
     st.session_state.resultados = []
@@ -27,8 +30,8 @@ def fetch_resultados():
         f = st.session_state.filtros
         st.session_state.resultados = st.session_state.motor.obtener_ejercicios(
             f['id_concepto'], 
-            bloom=f['bloom'], 
-            dificultad=f['dificultad']
+            bloom_min=f['bloom_min'], bloom_max=f['bloom_max'],
+            dif_min=f['dif_min'], dif_max=f['dif_max']
         )
 
 st.title("Axioma: Gestión de Ejercicios AVL")
@@ -39,17 +42,14 @@ st.sidebar.header("Filtros de Búsqueda")
 nombre_seleccionado = st.sidebar.selectbox("Concepto", list(DICCIONARIO_CONCEPTOS.values()))
 id_concepto = DICCIONARIO_INVERSO[nombre_seleccionado]
 
-bloom = st.sidebar.slider("Nivel Bloom (Opcional)", 0, 6, 0)
-bloom_val = bloom if bloom > 0 else None
-
-dificultad = st.sidebar.slider("Dificultad (Opcional)", 0, 99, 0)
-dificultad_val = dificultad if dificultad > 0 else None
+bloom_rango = st.sidebar.slider("Rango Nivel Bloom", 1, 6, (1, 6))
+dif_rango = st.sidebar.slider("Rango Dificultad", 1, 99, (1, 99))
 
 if st.sidebar.button("Buscar Ejercicios"):
     st.session_state.filtros = {
         'id_concepto': id_concepto,
-        'bloom': bloom_val,
-        'dificultad': dificultad_val
+        'bloom_min': bloom_rango[0], 'bloom_max': bloom_rango[1],
+        'dif_min': dif_rango[0], 'dif_max': dif_rango[1]
     }
     fetch_resultados()
 
